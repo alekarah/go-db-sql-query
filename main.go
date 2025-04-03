@@ -32,10 +32,10 @@ func main() {
 
 	// добавление нового клиента
 	newClient := Client{
-		FIO:      "", // укажите ФИО
-		Login:    "", // укажите логин
-		Birthday: "", // укажите день рождения
-		Email:    "", // укажите почту
+		FIO:      "Иванов Иван Иванович",
+		Login:    "ivanov_ivan",
+		Birthday: "20060102",
+		Email:    "ivan2006@ya.ru",
 	}
 
 	id, err := insertClient(db, newClient)
@@ -53,7 +53,7 @@ func main() {
 	fmt.Println(client)
 
 	// обновление логина клиента
-	newLogin := "" // укажите новый логин
+	newLogin := "ivan_2025" // укажите новый логин
 	err = updateClientLogin(db, newLogin, id)
 	if err != nil {
 		fmt.Println(err)
@@ -84,18 +84,38 @@ func main() {
 }
 
 func insertClient(db *sql.DB, client Client) (int64, error) {
-	// напишите здесь код для добавления новой записи в таблицу clients
+	result, err := db.Exec("INSERT INTO clients (fio, login, birthday, email) VALUES (:fio, :login, :birthday, :email)",
+		sql.Named("fio", client.FIO),
+		sql.Named("login", client.Login),
+		sql.Named("birthday", client.Birthday),
+		sql.Named("email", client.Email))
+	if err != nil {
+		return 0, err
+	}
 
-	return 0, nil // вместо 0 верните идентификатор добавленной записи
+	id, err := result.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	
+	return id, nil
 }
 
 func updateClientLogin(db *sql.DB, login string, id int64) error {
-	// напишите здесь код для обновления поля login в таблице clients у записи с заданным id
+	_, err := db.Exec("UPDATE clients SET login = ? WHERE id = ?", login, id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func deleteClient(db *sql.DB, id int64) error {
-	// напишите здесь код для удаления записи из таблицы clients по заданному id
+	_, err := db.Exec("DELETE FROM clients WHERE id = ?", id)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
